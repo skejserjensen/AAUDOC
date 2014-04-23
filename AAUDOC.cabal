@@ -1,0 +1,16 @@
+name:                AAUDOC 
+version:             0.1.0.0
+synopsis:            Cross-platform implementation of the (in)famous compile-doc for collaborative LaTeX document compilation.
+homepage:            https://github.com/skejserjensen/AAUDOC
+license:             GPL-3
+license-file:        LICENSE
+author:              Søren Kejser Jensen, Christoffer Moesgaard
+maintainer:          devel@kejserjensen.dk, cmoesgaard@gmail.com
+category:            Utilities
+build-type:          Simple
+cabal-version:       >=1.8
+
+executable AAUDOC
+  build-depends:       base, directory, filepath, process
+  main-is:             Main.hs
+  hs-source-dirs:      src
