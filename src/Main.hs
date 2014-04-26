@@ -1,5 +1,6 @@
 import System.Environment
 import System.FilePath
+import System.Directory
 
 import File
 
@@ -11,6 +12,8 @@ main = do
         let docName = dropExtension docPath
         let folderPath = takeDirectory docPath
         let document = Document docPath docName folderPath
+        -- Changes the current working directory to where the document is
+        setCurrentDirectory folderPath
         -- Parses the header of the current file
         jobList <- buildJobList document
         -- Run each job read from the document header

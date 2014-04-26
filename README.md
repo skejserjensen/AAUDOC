@@ -12,4 +12,4 @@ TODO
 * Pretty printing of output from commands and parsing of it for errors
 * Error handling should be a bit more sophisticated then just catching and hiding
 * The program should be restructured into sub components instead of just one file
-
+* Investigate how to set the path appropriately to correct "bibtex: (openout_any = p)" errors.
