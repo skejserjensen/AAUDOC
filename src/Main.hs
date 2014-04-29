@@ -1,23 +1,41 @@
-import System.Environment
-import System.FilePath
-import System.Directory
+import System.Exit (exitFailure)
+import System.Environment (getArgs)
+import System.FilePath (takeExtension, dropExtension, takeDirectory)
+import System.Directory (setCurrentDirectory)
 
 import File
 
--- Main
-main = do
-        -- Gets the "list" of documents from the command line
-        args <- getArgs 
-        let docPath = head args -- Ok maybe just the first one at the moment
-        let docName = dropExtension docPath
-        let folderPath = takeDirectory docPath
-        let document = Document docPath docName folderPath
-        -- Changes the current working directory to where the document is
-        setCurrentDirectory folderPath
-        -- Parses the header of the current file
-        jobList <- buildJobList document
-        -- Run each job read from the document header
-        mapM (\func -> func document) jobList
-        -- Main print the last IO operation so we give it a small one
-        return ()
+-- Main Function --
+main :: IO ()
+main = getArgs >>= processDocuments . prepareDocumentPaths >> return ()
+        where prepareDocumentPaths = map expandTexPath . filter couldBeTex 
 
+-- Document Processsing --
+processDocuments :: [String] -> IO [[String]]
+processDocuments [] = usage >> exitFailure -- No Tex documents passed
+processDocuments documents = mapM processDocument documents
+
+processDocument :: String -> IO [String]
+processDocument docPath = do
+            let docName = dropExtension docPath
+            let folderPath = takeDirectory docPath
+            let document = Document docPath docName folderPath
+            -- Changes the current working directory to where the document is
+            setCurrentDirectory folderPath
+            -- Parses the header of the current file
+            jobList <- buildJobList document
+            -- Run each job read from the document header
+            mapM (\func -> func document) jobList
+
+-- Helper Functions --
+usage :: IO ()
+usage = putStrLn "usage: aaudoc texfiles"
+
+couldBeTex :: String -> Bool -- Checks if a document could be a Tex documents
+couldBeTex docPath = takeExtension docPath `elem` ["", ".", ".tex"]
+
+expandTexPath :: String -> String -- Loosens the requirements of document paths
+expandTexPath documentPath = case (last documentPath) of 
+                                'x' -> documentPath
+                                '.' -> documentPath ++ "tex"
+                                _ -> documentPath ++ ".tex"
