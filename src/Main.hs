@@ -1,14 +1,15 @@
+import Control.Monad (filterM)
 import System.Exit (exitFailure)
 import System.Environment (getArgs)
 import System.FilePath (takeExtension, dropExtension, takeDirectory)
-import System.Directory (setCurrentDirectory)
+import System.Directory (setCurrentDirectory, doesFileExist)
 
 import File
 
 -- Main Function --
 main :: IO ()
-main = getArgs >>= processDocuments . prepareDocumentPaths >> return ()
-        where prepareDocumentPaths = map expandTexPath . filter couldBeTex 
+main = getArgs >>= preparePaths >>= processDocuments >> return ()
+        where preparePaths = filterM doesFileExist . map expandTexPath . filter couldBeTex
 
 -- Document Processsing --
 processDocuments :: [String] -> IO [[String]]
