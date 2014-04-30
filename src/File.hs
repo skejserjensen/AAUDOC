@@ -1,5 +1,6 @@
 module File
 ( Document(..)
+, Job (..)
 , buildJobList
 ) where
 
@@ -16,12 +17,13 @@ data Document = Document { path :: String
                          , folderPath :: String
                          } deriving Show
 
-type Job = Document -> IO String
+data Job = Job { operation :: String
+               , function :: Document -> IO String
+               }
 
 -- Public Functions --
 buildJobList :: Document -> IO [Job]
 buildJobList doc = readHeader (path doc) >>= return . parseHeader
-
 
 -- Header Parser --
 readHeader :: String -> IO [String]
@@ -35,12 +37,12 @@ parseHeader headerLines = reverse $ foldl buildJobs [] headerLines
 
 -- Job Creation --
 buildJob :: [String] -> Job
-buildJob ["%command", command] = commandJob command
-buildJob ("%link":inputPath:outputPath:[]) = linkJob inputPath outputPath
-buildJob ("%clean":suffixes) = cleanJob suffixes
+buildJob ["%command", command] = Job ("Command: " ++ command) (commandJob command)
+buildJob ("%link":inputPath:outputPath:[]) = Job ("Linkning: " ++ inputPath ++ " => " ++ outputPath)
+                                                (linkJob inputPath outputPath)
+buildJob ("%clean":suffixes) = Job ("Cleaning: " ++ (show suffixes)) (cleanJob suffixes)
 buildJob list = error $ "BuildJob: unknown operation in header: " ++ show list
-                
-       
+
 -- Job Functions --
 linkJob :: String -> String -> Document -> IO String
 linkJob inputPath outputPath doc = do

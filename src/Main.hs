@@ -20,12 +20,22 @@ processDocument docPath = do
             let docName = dropExtension docPath
             let folderPath = takeDirectory docPath
             let document = Document docPath docName folderPath
+            -- Prints a header to the user indicating processing is staring
+            putStrLn $ formatPrints "START" docPath
             -- Changes the current working directory to where the document is
             setCurrentDirectory folderPath
             -- Parses the header of the current file
             jobList <- buildJobList document
             -- Run each job read from the document header
-            mapM (\func -> func document) jobList
+            let curriedPerformJob = performJob document
+            jobOutput <- mapM curriedPerformJob jobList
+            -- Ensures a pretty newline between each without adding 
+            putStrLn ""
+            return jobOutput
+
+performJob :: Document -> Job -> IO String
+performJob document (Job operation function) = printJob >> function document
+    where printJob = putStrLn $ formatPrints "JOB" operation
 
 -- Helper Functions --
 usage :: IO ()
@@ -39,3 +49,7 @@ expandTexPath documentPath = case (last documentPath) of
                                 'x' -> documentPath
                                 '.' -> documentPath ++ "tex"
                                 _ -> documentPath ++ ".tex"
+
+formatPrints :: String -> String -> String
+formatPrints "START" fileName = "-- Processing: " ++ fileName
+formatPrints "JOB" operation = "   " ++ operation
