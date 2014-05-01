@@ -1,8 +1,9 @@
 import Control.Monad (filterM)
 import System.Exit (exitFailure)
 import System.Environment (getArgs)
-import System.FilePath (takeExtension, dropExtension, takeDirectory)
+import Data.Time.Clock.POSIX (getPOSIXTime)
 import System.Directory (setCurrentDirectory, doesFileExist)
+import System.FilePath (takeExtension, dropExtension, takeDirectory)
 
 import File
 
@@ -22,7 +23,8 @@ processDocument docPath = do
             let folderPath = takeDirectory docPath
             let document = Document docPath docName folderPath
             -- Prints a header to the user indicating processing is staring
-            putStrLn $ formatPrints "START" docPath
+            putStrLn $ formatPrints "BEGIN" docPath
+            startTimeStamp <- getPOSIXTime
             -- Changes the current working directory to where the document is
             setCurrentDirectory folderPath
             -- Parses the header of the current file
@@ -30,8 +32,9 @@ processDocument docPath = do
             -- Run each job read from the document header
             let curriedPerformJob = performJob document
             jobOutput <- mapM curriedPerformJob jobList
-            -- Ensures a pretty newline between each without adding 
-            putStrLn ""
+            -- Outputs the complete compile time for the documnent at the end
+            endTimeStamp <- getPOSIXTime
+            putStrLn $ formatPrints "END" $ show $ endTimeStamp - startTimeStamp
             return jobOutput
 
 performJob :: Document -> Job -> IO String
@@ -52,5 +55,6 @@ expandTexPath documentPath = case (last documentPath) of
                                 _ -> documentPath ++ ".tex"
 
 formatPrints :: String -> String -> String
-formatPrints "START" fileName = "-- Processing: " ++ fileName
+formatPrints "BEGIN" fileName = "-- Processing: " ++ fileName
 formatPrints "JOB" operation = "   " ++ operation
+formatPrints "END" compileTime = "   [Time elapsed]: " ++ compileTime ++ "\n"

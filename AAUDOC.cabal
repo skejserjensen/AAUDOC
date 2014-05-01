@@ -11,6 +11,6 @@ build-type:          Simple
 cabal-version:       >=1.8
 
 executable AAUDOC
-  build-depends:       base, directory, filepath, process
+  build-depends:       base, directory, filepath, process, time
   main-is:             Main.hs
   hs-source-dirs:      src
