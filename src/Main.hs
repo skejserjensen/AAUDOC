@@ -1,7 +1,7 @@
-import Control.Monad (filterM)
-import System.Exit (exitFailure)
 import System.Environment (getArgs)
+import Control.Monad (filterM, (>=>))
 import Data.Time.Clock.POSIX (getPOSIXTime)
+import System.Exit (ExitCode(..), exitFailure)
 import System.Directory (setCurrentDirectory, doesFileExist)
 import System.FilePath (takeExtension, dropExtension, takeDirectory)
 
@@ -13,11 +13,11 @@ main = getArgs >>= preparePaths >>= processDocuments >> return ()
         where preparePaths = filterM doesFileExist . map expandTexPath . filter couldBeTex
 
 -- Document Processsing --
-processDocuments :: [String] -> IO [[String]]
+processDocuments :: [String] -> IO ()
 processDocuments [] = usage >> exitFailure -- No Tex documents passed
-processDocuments documents = mapM processDocument documents
+processDocuments documents = mapM_ processDocument documents
 
-processDocument :: String -> IO [String]
+processDocument :: String -> IO ()
 processDocument docPath = do
             let docName = dropExtension docPath
             let folderPath = takeDirectory docPath
@@ -30,16 +30,21 @@ processDocument docPath = do
             -- Parses the header of the current file
             jobList <- buildJobList document
             -- Run each job read from the document header
-            let curriedPerformJob = performJob document
-            jobOutput <- mapM curriedPerformJob jobList
+            let performJobAndPrintErrors = performJob document >=> printJobErrors 
+            jobOutput <- mapM performJobAndPrintErrors jobList
             -- Outputs the complete compile time for the documnent at the end
             endTimeStamp <- getPOSIXTime
             putStrLn $ formatPrints "END" $ show $ endTimeStamp - startTimeStamp
-            return jobOutput
+            return () 
 
-performJob :: Document -> Job -> IO String
+performJob :: Document -> Job -> IO (ExitCode, String, String)
 performJob document (Job operation function) = printJob >> function document
     where printJob = putStrLn $ formatPrints "JOB" operation
+
+printJobErrors :: (ExitCode, String, String) -> IO ()
+printJobErrors (ExitSuccess, _, _) = return () -- getChar is a hack to pause exection
+printJobErrors (ExitFailure exitCode, stdout, stderr) = printError >> getChar >> return ()
+    where printError = putStrLn (formatPrints "ERROR" $ show exitCode) >> putStr stdout 
 
 -- Helper Functions --
 usage :: IO ()
@@ -57,4 +62,5 @@ expandTexPath documentPath = case (last documentPath) of
 formatPrints :: String -> String -> String
 formatPrints "BEGIN" fileName = "-- Processing: " ++ fileName
 formatPrints "JOB" operation = "   " ++ operation
+formatPrints "ERROR" exitCode = "     Job terminated with error code: " ++ exitCode
 formatPrints "END" compileTime = "   [Time elapsed]: " ++ compileTime ++ "\n"

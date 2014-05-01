@@ -7,7 +7,8 @@ module File
 import Data.List (delete)
 import Data.Char (isSpace)
 import Control.Monad (forM)
-import System.Process (readProcess)
+import System.Exit (ExitCode(..), ExitCode)
+import System.Process (readProcessWithExitCode)
 import System.FilePath ((</>), takeExtension, dropExtension)
 import System.Directory (doesDirectoryExist, getDirectoryContents, removeFile)
 
@@ -18,7 +19,7 @@ data Document = Document { path :: String
                          } deriving Show
 
 data Job = Job { operation :: String
-               , function :: Document -> IO String
+               , function :: Document -> IO (ExitCode, String, String)
                }
 
 -- Public Functions --
@@ -44,7 +45,7 @@ buildJob ("%clean":suffixes) = Job ("Cleaning: " ++ (show suffixes)) (cleanJob s
 buildJob list = error $ "BuildJob: unknown operation in header: " ++ show list
 
 -- Job Functions --
-linkJob :: String -> String -> Document -> IO String
+linkJob :: String -> String -> Document -> IO (ExitCode, String, String)
 linkJob inputPath outputPath doc = do
                     -- Searches the specified folder for tex files and a bibliography
                     textFiles <- (getFilesWithSuffixRecursive inputPath [".bib", ".tex"])
@@ -57,15 +58,15 @@ linkJob inputPath outputPath doc = do
                     outputAppend "\n\\begin{document}"
                     mapM (\line ->  outputAppend $ '\n' : line) outputFileLines
                     outputAppend "\n\\end{document}"
-                    -- We force a return of IO String for all jobs to have the same interface
-                    return "" 
+                    -- The return of (ExitSuccess, "", "") is added for a uniform interface between all jobs
+                    return (ExitSuccess, "", "")
 
-commandJob :: String -> Document -> IO String
-commandJob command doc = readProcess command [name doc] []
+commandJob :: String -> Document -> IO (ExitCode, String, String) 
+commandJob command doc = readProcessWithExitCode command [name doc] []
 
-cleanJob :: [String] -> Document -> IO String 
--- The return of "" is added for a uniform interface between all jobs
-cleanJob suffixToDelete doc = mapM_  prependPath suffixToDelete >> return ""
+cleanJob :: [String] -> Document -> IO (ExitCode, String, String)
+-- The return of (ExitSuccess, "", "") is added for a uniform interface between all jobs
+cleanJob suffixToDelete doc = mapM_  prependPath suffixToDelete >> return (ExitSuccess, "", "")
     where prependPath = (\elem -> removeFile $ (name doc) ++ "." ++ elem) 
 
 
