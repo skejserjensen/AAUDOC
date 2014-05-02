@@ -20,13 +20,13 @@ processDocuments documents = mapM_ processDocument documents
 processDocument :: String -> IO ()
 processDocument docPath = do
             let docName = dropExtension docPath
-            let folderPath = takeDirectory docPath
-            let document = Document docPath docName folderPath
+            let docFolder = takeDirectory docPath
+            let document = Document docPath docName docFolder
             -- Prints a header to the user indicating processing is staring
             putStrLn $ formatPrints "BEGIN" docPath
             startTimeStamp <- getPOSIXTime
             -- Changes the current working directory to where the document is
-            setCurrentDirectory folderPath
+            setCurrentDirectory docFolder 
             -- Parses the header of the current file
             jobList <- buildJobList document
             -- Run each job read from the document header
@@ -38,13 +38,13 @@ processDocument docPath = do
             return () 
 
 performJob :: Document -> Job -> IO (ExitCode, String, String)
-performJob document (Job operation function) = printJob >> function document
-    where printJob = putStrLn $ formatPrints "JOB" operation
+performJob document (Job jobOperation jobFunction) = printJob >> jobFunction document
+    where printJob = putStrLn $ formatPrints "JOB" jobOperation
 
 printJobErrors :: (ExitCode, String, String) -> IO ()
 printJobErrors (ExitSuccess, _, _) = return () -- getChar is a hack to pause exection
 printJobErrors (ExitFailure exitCode, stdout, stderr) = printError >> getChar >> return ()
-    where printError = putStrLn (formatPrints "ERROR" $ show exitCode) >> putStr stdout 
+    where printError = putStrLn (formatPrints "ERROR" $ show exitCode) >> putStr stdout >> putStr stderr
 
 -- Helper Functions --
 usage :: IO ()
@@ -61,6 +61,7 @@ expandTexPath documentPath = case (last documentPath) of
 
 formatPrints :: String -> String -> String
 formatPrints "BEGIN" fileName = "-- Processing: " ++ fileName
-formatPrints "JOB" operation = "   " ++ operation
+formatPrints "JOB" printOperation = "   " ++ printOperation
 formatPrints "ERROR" exitCode = "     Job terminated with error code: " ++ exitCode
 formatPrints "END" compileTime = "   [Time elapsed]: " ++ compileTime ++ "\n"
+formatPrints _  input = error $ "FormatPrints: unknown argument to print formatter \"" ++ input ++ "\""
