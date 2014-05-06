@@ -6,7 +6,7 @@ module File
 
 import Data.List (delete)
 import Data.Char (isSpace)
-import Control.Monad (forM)
+import Control.Monad (forM, (>=>))
 import Control.Exception (throwIO, catch)
 import System.IO.Error (isDoesNotExistError)
 import System.Exit (ExitCode(..), ExitCode)
@@ -14,7 +14,7 @@ import System.Process (readProcessWithExitCode)
 import System.FilePath ((</>), takeExtension, dropExtension)
 import System.Directory (doesDirectoryExist, getDirectoryContents, removeFile)
 
--- Data Types
+-- Data Types --
 data Document = Document { path :: String
                          , name :: String
                          , folderPath :: String
@@ -24,9 +24,11 @@ data Job = Job { operation :: String
                , function :: Document -> IO (ExitCode, String, String)
                }
 
+
 -- Public Functions --
 buildJobList :: Document -> IO [Job]
 buildJobList doc = readHeader (path doc) >>= return . parseHeader
+
 
 -- Header Parser --
 readHeader :: String -> IO [String]
@@ -37,14 +39,16 @@ parseHeader :: [String] -> [Job]
 parseHeader headerLines = reverse $ foldl buildJobs [] headerLines
     where buildJobs = (\acc line -> (buildJob $ words $ line) : acc)
 
+
 -- Job Creation --
 buildJob :: [String] -> Job
-buildJob ["%command", command] = Job ("Command: " ++ command) (commandJob command)
+buildJob ["%command", command] = Job ("Command: " ++ command) (commandJob command >=> addJobOutputParser command)
 buildJob ("%link":inputPath:outputPath:[]) = Job ("Linkning: " ++ inputPath ++ " => " ++ outputPath)
-                                                (linkJob inputPath outputPath)
+                                                (linkJob inputPath outputPath) 
 buildJob ("%clean":suffixList) = Job ("Cleaning: " ++ (show suffixes)) (cleanJob suffixes)
     where suffixes = if suffixList == [] then ["aux", "bbl", "blg", "idx", "log","out"] else suffixList
 buildJob list = error $ "BuildJob: unknown operation in header \"" ++ show list ++ "\""
+
 
 -- Job Functions --
 linkJob :: String -> String -> Document -> IO (ExitCode, String, String)
@@ -72,10 +76,23 @@ cleanJob :: [String] -> Document -> IO (ExitCode, String, String)
 cleanJob suffixToDelete doc = mapM_  prependPath suffixToDelete >> return (ExitSuccess, "", "")
     where prependPath = (\suffix -> removeFileIfExists $ (name doc) ++ "." ++ suffix) 
 
+
+-- Job Output Parser Functions --
+addJobOutputParser :: String -> ((ExitCode, String, String) -> IO (ExitCode, String, String))
+addJobOutputParser jobName
+            | jobName `elem` ["latex", "pdflatex", "xelatex", "lualatex"] = latexStripNonErrors
+            | otherwise = \(exitCode, stdout, stderr) -> return (exitCode, stdout, stderr)
+
+latexStripNonErrors :: (ExitCode, String, String) -> IO (ExitCode, String, String)
+latexStripNonErrors (ExitSuccess, stdout, stderr) = return (ExitSuccess, stdout, stderr)
+latexStripNonErrors (exitCode, stdout, stderr) = return (exitCode, stdoutErrors, stderr)
+    where stdoutErrors = dropWhile (/= '!') stdout
+
+
 -- Helper Functions --
 rstripWhitespace :: [String] -> [String]
 rstripWhitespace listOfStrings = map rstrip listOfStrings 
-    where  rstrip = reverse . dropWhile isSpace . reverse
+    where rstrip = (reverse . dropWhile isSpace . reverse)
 
 getFilesWithSuffixRecursive :: String -> [String] -> IO [String]
 getFilesWithSuffixRecursive directoryPath suffix = files >>= filterWithSuffix
@@ -105,9 +122,9 @@ formatIndexLines line
     | (takeExtension line) == ".bib" = "\\bibliography{" ++ (dropExtension line) ++ "}"
     | True = error $ "LinkJob: unknown filetype passed to index fomatter \"" ++ line ++ "\""
 
-
 removeFileIfExists :: String -> IO ()
 removeFileIfExists filePath = removeFile filePath `catch` handleFileNotExists
     where handleFileNotExists exeception
             | isDoesNotExistError exeception = return ()
             | otherwise = throwIO exeception
+

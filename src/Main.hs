@@ -30,8 +30,7 @@ processDocument docPath = do
             -- Parses the header of the current file
             jobList <- buildJobList document
             -- Run each job read from the document header
-            let performJobAndPrintErrors = performJob document >=> printJobErrors 
-            jobOutput <- mapM performJobAndPrintErrors jobList
+            mapM_ (performJob document >=> printJobErrors) jobList
             -- Outputs the complete compile time for the documnent at the end
             endTimeStamp <- getPOSIXTime
             putStrLn $ formatPrints "END" $ show $ endTimeStamp - startTimeStamp
@@ -42,9 +41,9 @@ performJob document (Job jobOperation jobFunction) = printJob >> jobFunction doc
     where printJob = putStrLn $ formatPrints "JOB" jobOperation
 
 printJobErrors :: (ExitCode, String, String) -> IO ()
-printJobErrors (ExitSuccess, _, _) = return () -- getChar is a hack to pause exection
-printJobErrors (ExitFailure exitCode, stdout, stderr) = printError >> getChar >> return ()
-    where printError = putStrLn (formatPrints "ERROR" $ show exitCode) >> putStr stdout >> putStr stderr
+printJobErrors (ExitSuccess, _, _) = return ()
+printJobErrors (ExitFailure exitCode, stdout, stderr) = printErrorCode exitCode >> printStreams
+    where printStreams = printError stdout >> printError stderr
 
 -- Helper Functions --
 usage :: IO ()
@@ -65,3 +64,15 @@ formatPrints "JOB" printOperation = "   " ++ printOperation
 formatPrints "ERROR" exitCode = "     Job terminated with error code: " ++ exitCode
 formatPrints "END" compileTime = "   [Time elapsed]: " ++ compileTime ++ "\n"
 formatPrints _  input = error $ "FormatPrints: unknown argument to print formatter \"" ++ input ++ "\""
+
+printErrorCode :: Int -> IO ()
+printErrorCode exitCode = putStrLn (formatPrints "ERROR" $ show exitCode)
+
+printError :: String -> IO ()
+printError "" = return ()
+printError output = putStr (indentJobOutput (errorBorder ++ ('\n' : output) ++ errorBorder)) >> waitForUserInput
+    where errorBorder = "-----------------------------------" -- getChar is a hack to pause exection
+          waitForUserInput = putStrLn "     Press Return to to continue, or Ctrl-C to termiante" >> getChar >> return ()
+        
+indentJobOutput :: String -> String
+indentJobOutput output = unlines $ map ("     "++) $ lines output
