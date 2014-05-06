@@ -86,7 +86,7 @@ addJobOutputParser jobName
 latexStripNonErrors :: (ExitCode, String, String) -> IO (ExitCode, String, String)
 latexStripNonErrors (ExitSuccess, stdout, stderr) = return (ExitSuccess, stdout, stderr)
 latexStripNonErrors (exitCode, stdout, stderr) = return (exitCode, stdoutErrors, stderr)
-    where stdoutErrors = dropWhile (/= '!') stdout
+    where stdoutErrors = unlines $ reverse $ takeWhile (not . endsWith "tex)") $ reverse $ lines stdout
 
 
 -- Helper Functions --
@@ -121,6 +121,10 @@ formatIndexLines line
     | (takeExtension line) == ".tex" = "\\input{" ++ (dropExtension line) ++ "}"
     | (takeExtension line) == ".bib" = "\\bibliography{" ++ (dropExtension line) ++ "}"
     | True = error $ "LinkJob: unknown filetype passed to index fomatter \"" ++ line ++ "\""
+
+endsWith :: Eq a => [a] -> [a] -> Bool
+endsWith _ [] = False
+endsWith end list = if reverse end == (take (length end) $ reverse list) then True else False
 
 removeFileIfExists :: String -> IO ()
 removeFileIfExists filePath = removeFile filePath `catch` handleFileNotExists
