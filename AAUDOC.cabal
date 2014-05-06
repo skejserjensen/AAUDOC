@@ -12,6 +12,6 @@ cabal-version:       >=1.8
 
 executable aaudoc
   build-depends:       base, directory, filepath, process, time
-  ghc-options:         -Wall
+  ghc-options:         -Wall -O2
   main-is:             Main.hs
   hs-source-dirs:      src
