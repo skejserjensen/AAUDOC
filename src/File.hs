@@ -7,6 +7,8 @@ module File
 import Data.List (delete)
 import Data.Char (isSpace)
 import Control.Monad (forM)
+import Control.Exception (throwIO, catch)
+import System.IO.Error (isDoesNotExistError)
 import System.Exit (ExitCode(..), ExitCode)
 import System.Process (readProcessWithExitCode)
 import System.FilePath ((</>), takeExtension, dropExtension)
@@ -35,13 +37,13 @@ parseHeader :: [String] -> [Job]
 parseHeader headerLines = reverse $ foldl buildJobs [] headerLines
     where buildJobs = (\acc line -> (buildJob $ words $ line) : acc)
 
-
 -- Job Creation --
 buildJob :: [String] -> Job
 buildJob ["%command", command] = Job ("Command: " ++ command) (commandJob command)
 buildJob ("%link":inputPath:outputPath:[]) = Job ("Linkning: " ++ inputPath ++ " => " ++ outputPath)
                                                 (linkJob inputPath outputPath)
-buildJob ("%clean":suffixes) = Job ("Cleaning: " ++ (show suffixes)) (cleanJob suffixes)
+buildJob ("%clean":suffixList) = Job ("Cleaning: " ++ (show suffixes)) (cleanJob suffixes)
+    where suffixes = if suffixList == [] then ["aux", "bbl", "blg", "idx", "log","out"] else suffixList
 buildJob list = error $ "BuildJob: unknown operation in header \"" ++ show list ++ "\""
 
 -- Job Functions --
@@ -67,7 +69,7 @@ commandJob command doc = readProcessWithExitCode command [name doc] []
 cleanJob :: [String] -> Document -> IO (ExitCode, String, String)
 -- The return of (ExitSuccess, "", "") is added for a uniform interface between all jobs
 cleanJob suffixToDelete doc = mapM_  prependPath suffixToDelete >> return (ExitSuccess, "", "")
-    where prependPath = (\suffix -> removeFile $ (name doc) ++ "." ++ suffix) 
+    where prependPath = (\suffix -> removeFileIfExists $ (name doc) ++ "." ++ suffix) 
 
 
 -- Helper Functions --
@@ -98,3 +100,10 @@ formatIndexLines line
     | (takeExtension line) == ".tex" = "\\input{" ++ (dropExtension line) ++ "}"
     | (takeExtension line) == ".bib" = "\\bibliography{" ++ (dropExtension line) ++ "}"
     | True = error $ "LinkJob: unknown filetype passed to index fomatter \"" ++ line ++ "\""
+
+
+removeFileIfExists :: String -> IO ()
+removeFileIfExists filePath = removeFile filePath `catch` handleFileNotExists
+    where handleFileNotExists exeception
+            | isDoesNotExistError exeception = return ()
+            | otherwise = throwIO exeception
