@@ -72,7 +72,7 @@ printError :: String -> IO ()
 printError "" = return ()
 printError output = putStr (indentJobOutput (errorBorder ++ ('\n' : output) ++ errorBorder)) >> waitForUserInput
     where errorBorder = "-----------------------------------" -- getChar is a hack to pause exection
-          waitForUserInput = putStrLn "     Press Return to to continue, or Ctrl-C to termiante" >> getChar >> return ()
+          waitForUserInput = putStrLn "     Press Return to to continue, or Ctrl-C to terminate" >> getChar >> return ()
         
 indentJobOutput :: String -> String
 indentJobOutput output = unlines $ map ("     "++) $ lines output
