@@ -4,12 +4,12 @@ module File
 , buildJobList
 ) where
 
-import Data.List (delete)
 import Data.Char (isSpace)
+import Data.List (delete, sort)
 import Control.Monad (forM, (>=>))
 import Control.Exception (throwIO, catch)
-import System.IO.Error (isDoesNotExistError)
 import System.Exit (ExitCode(..), ExitCode)
+import System.IO.Error (isDoesNotExistError)
 import System.Process (readProcessWithExitCode)
 import System.FilePath ((</>), takeExtension, dropExtension)
 import System.Directory (doesDirectoryExist, getDirectoryContents, removeFile)
@@ -110,7 +110,7 @@ getContentsRecursive topdir = do
     if isDirectory
       then getContentsRecursive elementPath
       else return [elementPath]
-  return $ concat paths
+  return $ sort $ concat paths
 
 replaceWindowsPathSeparators :: String -> String
 replaceWindowsPathSeparators line = reverse $ foldl replaceSeperator "" line
