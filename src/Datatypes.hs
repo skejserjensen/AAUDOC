@@ -14,12 +14,17 @@ import System.Exit (ExitCode (..), ExitCode)
 data Document = Document { path :: String
                          , name :: String
                          , folderPath :: String
-                         } deriving Show
+                         }
 
-{- Something that should be done to a document
-    operation: a printable string documenting the job
-    function: a function taking a document of performing the job
--}
-data Job = Job { operation :: String
-               , function :: Document -> IO (ExitCode, String, String)
-               }
+ -- Something that should be done to a document
+data Job = 
+    {- operation: a printable string for displaying when running the job
+       function: a function taking a document and performing the job
+    -} StandardJob String (Document -> IO (ExitCode, String, String)) 
+
+    {- command: a string containing the name of the command to be executed
+       operation: a printable string for displaying when running the job
+       function: a function taking a document and performing the job
+    -} | CommandJob String String (Document -> IO (ExitCode, String, String))
+
+

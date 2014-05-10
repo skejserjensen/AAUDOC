@@ -17,10 +17,11 @@ import System.Directory (doesDirectoryExist, getDirectoryContents, removeFile)
 
 -- Job Creation --
 buildJob :: [String] -> Job
-buildJob ("%command" : command : arguments) = Job ("Command: " ++ command) (commandJob command arguments)
-buildJob ("%link" : inputPath : outputPath : []) = Job ("Linkning: " ++ inputPath ++ " => " ++ outputPath)
+buildJob ("%command" : command : arguments) = CommandJob command ("Command: " ++ command)
+                                                (commandJob command arguments)
+buildJob ("%link" : inputPath : outputPath : []) = StandardJob ("Linkning: " ++ inputPath ++ " => " ++ outputPath)
                                                 (linkJob inputPath outputPath)
-buildJob ("%clean" : suffixList) = Job ("Cleaning: " ++ show suffixes) (cleanJob suffixes)
+buildJob ("%clean" : suffixList) = StandardJob ("Cleaning: " ++ show suffixes) (cleanJob suffixes)
     where suffixes = if null suffixList then ["aux", "bbl", "blg", "idx", "log", "out"] else suffixList
 buildJob list = error $ "BuildJob: unknown operation in header \"" ++ show list ++ "\""
 

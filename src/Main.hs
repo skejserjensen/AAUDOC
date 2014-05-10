@@ -43,8 +43,8 @@ processDocument docPath = do
             return ()
 
 performJob :: Document -> Job -> IO (ExitCode, String, String)
-performJob document (Job jobOperation jobFunction) = printJob >> jobFunction document
-    where printJob = putStrLn $ formatPrints "JOB" jobOperation
+performJob document (StandardJob operation function) = printJob operation >> function document
+performJob document (CommandJob _ operation function) = printJob operation >> function document
 
 printJobErrors :: (ExitCode, String, String) -> IO ()
 printJobErrors (ExitSuccess, _, _) = return ()
@@ -63,6 +63,9 @@ expandTexPath documentPath = case last documentPath of
                                 'x' -> documentPath
                                 '.' -> documentPath ++ "tex"
                                 _ -> documentPath ++ ".tex"
+
+printJob :: String -> IO ()
+printJob operation = putStrLn $ formatPrints "JOB" operation
 
 formatPrints :: String -> String -> String
 formatPrints "BEGIN" fileName = "-- Processing: " ++ fileName

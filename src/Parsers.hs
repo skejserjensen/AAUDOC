@@ -11,10 +11,11 @@ import System.Exit (ExitCode (..))
 
 -- Public Functions --
 addJobOutputParser :: Job -> Job
-addJobOutputParser (Job jobOperation jobFunction)
-            | jobOperation `elem` ["latex", "pdflatex", "xelatex", "lualatex"] =
-                                        Job jobOperation $ jobFunction >=> laTeXStripNonErrors
-            | otherwise = Job jobOperation jobFunction
+addJobOutputParser (StandardJob operation function) = StandardJob operation function
+addJobOutputParser (CommandJob command operation function)
+            | command `elem` ["latex", "pdflatex", "xelatex", "lualatex"] =
+                                        CommandJob command operation $ function >=> laTeXStripNonErrors
+            | otherwise = CommandJob command operation function
 
 -- Job Output Parser Functions --
 laTeXStripNonErrors :: (ExitCode, String, String) -> IO (ExitCode, String, String)
