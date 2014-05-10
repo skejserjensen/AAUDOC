@@ -42,7 +42,8 @@ parseHeader headerLines = reverse $ foldl buildJobs [] headerLines
 
 -- Job Creation --
 buildJob :: [String] -> Job
-buildJob ["%command", command] = Job ("Command: " ++ command) (commandJob command >=> addJobOutputParser command)
+buildJob ("%command" : command : arguments) = Job ("Command: " ++ command) 
+                                                (commandJob command arguments >=> addJobOutputParser command)
 buildJob ("%link" : inputPath : outputPath : []) = Job ("Linkning: " ++ inputPath ++ " => " ++ outputPath)
                                                 (linkJob inputPath outputPath)
 buildJob ("%clean" : suffixList) = Job ("Cleaning: " ++ show suffixes) (cleanJob suffixes)
@@ -68,8 +69,8 @@ linkJob inputPath outputPath _ = do
                     -- The return of (ExitSuccess, "", "") is added for a uniform interface between all jobs
                     return (ExitSuccess, "", "")
 
-commandJob :: String -> Document -> IO (ExitCode, String, String)
-commandJob command doc = readProcessWithExitCode command [name doc] []
+commandJob :: String -> [String] -> Document -> IO (ExitCode, String, String)
+commandJob command arguments doc = readProcessWithExitCode command (arguments ++ [name doc]) []
 
 cleanJob :: [String] -> Document -> IO (ExitCode, String, String)
 -- The return of (ExitSuccess, "", "") is added for a uniform interface between all jobs
