@@ -1,11 +1,15 @@
+-- Project Level Imports --
+import File (buildJobList)
+import Parsers (addJobOutputParser)
+import Datatypes (Job (..), Document (..))
+
+-- Global Level Imports --
 import System.Environment (getArgs)
 import Control.Monad (filterM, (>=>))
 import Data.Time.Clock.POSIX (getPOSIXTime)
 import System.Exit (ExitCode (..), exitFailure)
 import System.Directory (setCurrentDirectory, doesFileExist)
 import System.FilePath (takeExtension, dropExtension, takeDirectory)
-
-import File
 
 -- Main Function --
 main :: IO ()
@@ -27,10 +31,12 @@ processDocument docPath = do
             startTimeStamp <- getPOSIXTime
             -- Changes the current working directory to where the document is
             setCurrentDirectory docFolder
-            -- Parses the header of the current file
+            -- Parses the header of the current file and builds jobs
             jobList <- buildJobList document
+            -- Adds output parsers to the jobs that support it to minimise useless output
+            let jobListWithParsers = map addJobOutputParser jobList
             -- Run each job read from the document header
-            mapM_ (performJob document >=> printJobErrors) jobList
+            mapM_ (performJob document >=> printJobErrors) jobListWithParsers
             -- Outputs the complete compile time for the documnent at the end
             endTimeStamp <- getPOSIXTime
             putStrLn $ formatPrints "END" $ show $ endTimeStamp - startTimeStamp
