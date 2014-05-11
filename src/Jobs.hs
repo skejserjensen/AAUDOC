@@ -22,8 +22,9 @@ buildJob ("%command" : command : arguments) = CommandJob command ("Command: " ++
 buildJob ("%link" : inputPath : outputPath : []) = StandardJob ("Linkning: " ++ inputPath ++ " => " ++ outputPath)
                                                 (linkJob inputPath outputPath)
 buildJob ("%clean" : suffixList) = StandardJob ("Cleaning: " ++ show suffixes) (cleanJob suffixes)
-    where suffixes = if null suffixList then ["aux", "bbl", "blg", "idx", "log", "out"] else suffixList
-buildJob list = error $ "BuildJob: unknown operation in header \"" ++ show list ++ "\""
+    where suffixes = if null suffixList then defaultSuffixList else suffixList
+          defaultSuffixList = ["aux", "bbl", "blg", "brf", "ilg", "ind", "idx", "log", "out", "toc"]         
+buildJob list = error $! "BuildJob: unknown operation in header \"" ++ show list ++ "\""
 
 -- Job Functions --
 linkJob :: String -> String -> Document -> IO (ExitCode, String, String)

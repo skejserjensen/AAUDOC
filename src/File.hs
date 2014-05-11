@@ -4,6 +4,7 @@ module File
 
 -- Project Level Imports --
 import Jobs (buildJob)
+import Macros (expandMacros)
 import Datatypes (Document (..), Job (..))
 
 -- Global Level Imports --
@@ -12,7 +13,7 @@ import Control.Monad (liftM)
 
 -- Public Functions --
 buildJobList :: Document -> IO [Job]
-buildJobList doc = liftM parseHeader $ readHeader $ path doc
+buildJobList doc = liftM (parseHeader . expandMacros doc) $ readHeader $ path doc
 
 -- Header Parsing Functions --
 readHeader :: String -> IO [String]
