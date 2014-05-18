@@ -9,8 +9,8 @@ import System.Environment (getArgs)
 import Control.Monad (filterM, (>=>))
 import Data.Time.Clock.POSIX (getPOSIXTime)
 import System.Exit (ExitCode (..), exitFailure)
-import System.Directory (setCurrentDirectory, doesFileExist)
-import System.FilePath (takeExtension, dropExtension, takeDirectory)
+import System.Directory (getCurrentDirectory, setCurrentDirectory, doesFileExist)
+import System.FilePath (takeExtension, dropExtension, takeDirectory, pathSeparator)
 
 -- Main Function --
 main :: IO ()
@@ -24,20 +24,25 @@ processDocuments documents = mapM_ processDocument documents
 
 processDocument :: String -> IO ()
 processDocument docPath = do
-            let docName = dropExtension docPath
-            let docFolder = takeDirectory docPath
-            let document = Document docPath docName docFolder
             -- Prints a header to the user indicating processing is staring
             putStrLn $ formatPrints "BEGIN" docPath
             startTimeStamp <- getPOSIXTime
             -- Changes the current working directory to where the document is
-            setCurrentDirectory docFolder
+            oldCurrentDirectory <- getCurrentDirectory
+            setCurrentDirectory $ takeDirectory docPath
+            -- Strip the path so relative folder paths and file names can be used
+            let relativeDocPath = reverse $ takeWhile (/= pathSeparator) $ reverse docPath
+            let docName = dropExtension relativeDocPath
+            let docFolder = takeDirectory relativeDocPath
+            let document = Document relativeDocPath docName docFolder
             -- Parses the header of the current file and builds jobs
             jobList <- buildJobList document
             -- Adds output parsers to the jobs that support it to minimise useless output
             let jobListWithParsers = map addJobOutputParser jobList
             -- Run each job read from the document header
             mapM_ (performJob document >=> printJobErrors) $!! jobListWithParsers
+            -- We restore the old working directory so no changes are done to the environment
+            setCurrentDirectory oldCurrentDirectory
             -- Outputs the complete compile time for the documnent at the end
             endTimeStamp <- getPOSIXTime
             putStrLn $ formatPrints "END" $ show $ endTimeStamp - startTimeStamp
