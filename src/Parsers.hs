@@ -8,6 +8,7 @@ import Datatypes (Job (..))
 -- Global Level Imports --
 import Control.Monad ((>=>))
 import System.Exit (ExitCode (..))
+import Data.List (isSuffixOf)
 
 -- Public Functions --
 addJobOutputParser :: Job -> Job
@@ -21,9 +22,11 @@ addJobOutputParser (CommandJob command operation function)
 laTeXStripNonErrors :: (ExitCode, String, String) -> IO (ExitCode, String, String)
 laTeXStripNonErrors (ExitSuccess, stdout, stderr) = return (ExitSuccess, stdout, stderr)
 laTeXStripNonErrors (exitCode, stdout, stderr) = return (exitCode, stdoutErrors, stderr)
-    where stdoutErrors = unlines $ reverse $ takeWhile (not . endsWith "tex)") $ reverse $ lines stdout
+    where stdoutErrors = unlines $ reverse $ takeWhile stillError $ reverse $ lines stdout
+          stillError = not . endsWithElem ["tex)", "))"]
 
 -- Helper Functions --
-endsWith :: Eq a => [a] -> [a] -> Bool
-endsWith _ [] = False
-endsWith end list = reverse end == take (length end) (reverse list)
+endsWithElem :: Eq a => [[a]] -> [a] -> Bool
+endsWithElem _ [] = False
+endsWithElem [] _ = False
+endsWithElem (endElem : elems) list = (endElem `isSuffixOf` list) || endsWithElem elems list

@@ -27,9 +27,8 @@ data Job =
     {- command: a string containing the name of the command to be executed
        operation: a printable string for displaying when running the job
        function: a function taking a document and performing the job
-    -} | CommandJob String String (Document -> IO (ExitCode, String, String)) 
+    -} | CommandJob String String (Document -> IO (ExitCode, String, String))
 
 instance NFData Job where
     rnf (StandardJob operation function) = operation `seq` function `seq` ()
     rnf (CommandJob command operation function) = command `seq` operation `seq` function `seq` ()
-
