@@ -18,7 +18,8 @@ buildJobList doc = liftM (parseHeader . expandMacros doc) $ readHeader $ path do
 -- Header Parsing Functions --
 readHeader :: String -> IO [String]
 readHeader docPath = liftM takeHeader $ readFile docPath
-    where takeHeader = takeWhile (/= "") . rstripWhitespace . lines
+    where takeHeader = takeWhile couldBeHeader . rstripWhitespace . lines
+          couldBeHeader line = not (null line) && head line == '%'
 
 parseHeader :: [String] -> [Job]
 parseHeader headerLines = reverse $ foldl buildJobs [] headerLines

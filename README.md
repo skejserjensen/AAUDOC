@@ -19,7 +19,7 @@ cabal install
 
 Configuration
 -------------
-AAUDOC are configured using some simple annotations in the header of main tex document in a LaTeX project, the one that is being compiled to create the final document. Currently three annotations are supported, each corresponding more or less to one of the programs features.
+AAUDOC are configured using some simple annotations in the header of main tex document in a LaTeX project, the one that is being compiled to create the final document. The AAUDOC configuration header must be placed at the top of the main tex document and have no normal LaTeX comments trailing it. Currently three annotations are supported, each corresponding more or less to one of the programs features.
 
 Link searches a directory recursively for documents with either the .tex or .bib suffix and create a index, with each file included with the appropriate expression and the entire list of documents enclosed in \begin{document} .. \end{document}, making the index easy to included directly in the main tex document. The first argument defines what folder should be search for .tex and .bib files, while the second argument is the path where the index .tex file should be written.
 ```
