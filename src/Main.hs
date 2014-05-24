@@ -9,6 +9,7 @@ import System.Environment (getArgs)
 import Control.Monad (filterM, (>=>))
 import Data.Time.Clock.POSIX (getPOSIXTime)
 import System.Exit (ExitCode (..), exitFailure)
+import Control.Exception (catch, IOException, ErrorCall)
 import System.Directory (getCurrentDirectory, setCurrentDirectory, doesFileExist)
 import System.FilePath (takeExtension, dropExtension, takeDirectory, pathSeparator)
 
@@ -36,11 +37,13 @@ processDocument docPath = do
             let docFolder = takeDirectory relativeDocPath
             let document = Document relativeDocPath docName docFolder
             -- Parses the header of the current file and builds jobs
-            jobList <- buildJobList document
+            jobList <- catch (buildJobList document) handleFileIOException
             -- Adds output parsers to the jobs that support it to minimise useless output
             let jobListWithParsers = map addJobOutputParser jobList
-            -- Run each job read from the document header
-            mapM_ (performJob document >=> printJobErrors) $!! jobListWithParsers
+            -- Forces evaluation to catch any errors in the document header before running any jobs
+            safeJobList <- catch (return $!! jobListWithParsers) handleHeaderError
+            -- Runs each job created from the header and handles all IO errors thrown by them
+            catch (mapM_ (performJob document >=> printJobErrors) safeJobList) handleJOBIOException
             -- We restore the old working directory so no changes are done to the environment
             setCurrentDirectory oldCurrentDirectory
             -- Outputs the complete compile time for the documnent at the end
@@ -56,6 +59,29 @@ printJobErrors :: (ExitCode, String, String) -> IO ()
 printJobErrors (ExitSuccess, _, _) = return ()
 printJobErrors (ExitFailure exitCode, stdout, stderr) = printErrorCode exitCode >> printStreams
     where printStreams = printError stdout >> printError stderr
+
+-- Error Handling Functions
+handleFileIOException :: IOException -> IO [a]
+handleFileIOException ioe = putStrLn ("     ----- IO Error -----\n\
+                                \     " ++ show ioe ++ "\n\n\
+                                \     AAUDOC was unable to read the document's configuration header,\n\
+                                \     please verify that reading is allowed by the document's permissions.\n\
+                                \     ----- IO Error -----") >> return []
+
+handleHeaderError :: ErrorCall -> IO [a]
+handleHeaderError ec = putStrLn ("     ----- Header Error -----\n\
+                                \     " ++ show ec ++ "\n\n\
+                                \     AAUDOC found unsupported operations in the configuration header, please verify\n\
+                                \     that the document's header does not contain spelling mistakes or misplaced whitespace.\n\
+                                \     ----- Header Error -----") >> return []
+
+handleJOBIOException :: IOException -> IO ()
+handleJOBIOException ioe = putStrLn $ "     ----- IO Error -----\n\
+                                \     " ++ show ioe ++ "\n\n\
+                                \     AAUDOC was unable to perform one of the operations specified in the document's\n\
+                                \     header, please verify that the necessary folders are readable and writeable, and that\n\
+                                \     the output of each operation does not contain characters with invalid character encoding.\n\
+                                \     ----- IO Error -----"
 
 -- Helper Functions --
 usage :: IO ()
