@@ -10,7 +10,7 @@ AAUDOC is written in Haskell and uses the Cabal build tool. The simplest way to 
 
 The package can then be compiled and/or installed by running one of two commands, depending on where the compiled program should be placed.
 ```
-The program can be either compiled and left in a folder dist in the root of hte repository.
+The program can be either compiled and left in a folder dist in the root of the repository.
 cabal build
 
 Or compiled and installed into cabals bin directory, which should be in systemm path.
@@ -75,7 +75,7 @@ The next two macros currently implemented are very similar, and performs linking
 ```
 
 The last macro is just compilation linking, compilation, and cleaning. Two compilations are performed to support the use of reference between the documents.
-````
+```
 %macro compile
 ------
 %link Documents/ Documents/index.tex
@@ -86,7 +86,6 @@ The last macro is just compilation linking, compilation, and cleaning. Two compi
 
 TODO
 ----
-* Make errors in the header of TeX files non terminating, so one file can fail while the rest is OK.
 * Go through the program and simplify the code where possible, re-factoring at the same time.
 * Investigate how to set the path appropriately to correct "bibtex: (openout_any = p)" errors.
  
