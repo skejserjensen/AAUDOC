@@ -19,7 +19,7 @@ import System.Directory (doesDirectoryExist, getDirectoryContents, removeFile)
 buildJob :: [String] -> Job
 buildJob ("%command" : command : arguments) = CommandJob command ("Command: " ++ command)
                                                 (commandJob command arguments)
-buildJob ("%link" : inputPath : outputPath : []) = StandardJob ("Linkning: " ++ inputPath ++ " => " ++ outputPath)
+buildJob ("%link" : inputPath : outputPath : []) = StandardJob ("Linking: " ++ inputPath ++ " => " ++ outputPath)
                                                 (linkJob inputPath outputPath)
 buildJob ("%clean" : suffixList) = StandardJob ("Cleaning: " ++ show suffixes) (cleanJob suffixes)
     where suffixes = if null suffixList then defaultSuffixList else suffixList
