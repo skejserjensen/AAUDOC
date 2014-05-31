@@ -6,8 +6,8 @@ import Datatypes (Job (..), Document (..))
 -- Global Level Imports --
 import Control.DeepSeq (($!!))
 import System.Environment (getArgs)
-import Control.Monad (filterM, (>=>))
 import Data.Time.Clock.POSIX (getPOSIXTime)
+import Control.Monad (filterM, (>=>), void)
 import System.Exit (ExitCode (..), exitFailure)
 import Control.Exception (catch, IOException, ErrorCall)
 import System.Directory (getCurrentDirectory, setCurrentDirectory, doesFileExist)
@@ -112,8 +112,16 @@ printErrorCode exitCode = putStrLn (formatPrints "ERROR" $ show exitCode)
 printError :: String -> IO ()
 printError "" = return ()
 printError output = putStr (indentJobOutput (errorBorder ++ ('\n' : output) ++ errorBorder)) >> waitForUserInput
-    where errorBorder = "-----------------------------------" -- getChar is a hack to pause exection
-          waitForUserInput = putStrLn "     Press Return to to continue, or Ctrl-C to terminate" >> getChar >> return ()
+    where errorBorder = "-----------------------------------"
+          waitForUserInput = putStrLn "     Press Return to to continue, or Ctrl-C to terminate" >> pause
+
+{- The use of getChar is a hack to pause execution, the bogus error handling should
+prevent Windows from printing stdin closed errors when Ctrl-C is used to terminate the program
+-}
+pause :: IO ()
+pause = void (catch getChar ignoreErrors)
+    where ignoreErrors :: IOException -> IO Char
+          ignoreErrors _ = return '\n'
 
 indentJobOutput :: String -> String
 indentJobOutput output = unlines $ map ("     " ++) $ lines output
