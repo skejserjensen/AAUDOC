@@ -8,7 +8,7 @@ import Datatypes (Job (..))
 -- Global Level Imports --
 import Control.Monad ((>=>))
 import System.Exit (ExitCode (..))
-import Data.List (isSuffixOf)
+import Data.List (isPrefixOf)
 
 -- Public Functions --
 addJobOutputParser :: Job -> Job
@@ -22,11 +22,11 @@ addJobOutputParser (CommandJob command operation function)
 laTeXStripNonErrors :: (ExitCode, String, String) -> IO (ExitCode, String, String)
 laTeXStripNonErrors (ExitSuccess, stdout, stderr) = return (ExitSuccess, stdout, stderr)
 laTeXStripNonErrors (exitCode, stdout, stderr) = return (exitCode, stdoutErrors, stderr)
-    where stdoutErrors = unlines $ reverse $ takeWhile stillError $ reverse $ lines stdout
-          stillError = not . endsWithElem ["tex)", "))"]
+    where stdoutErrors = unlines $ takeTeXError [] $ reverse $ lines stdout
 
 -- Helper Functions --
-endsWithElem :: Eq a => [[a]] -> [a] -> Bool
-endsWithElem _ [] = False
-endsWithElem [] _ = False
-endsWithElem (endElem : elems) list = (endElem `isSuffixOf` list) || endsWithElem elems list
+takeTeXError :: [String] -> [String] -> [String]
+takeTeXError acc [] = acc -- A rough match of the parentheses structure used by LaTeX for output
+takeTeXError acc (x : xs) = if (") (" `isPrefixOf` x || "(" `isPrefixOf` x) && lineIsTexFile x
+                            then takeTeXError (x : acc) [] else takeTeXError (x : acc) xs
+    where lineIsTexFile line = ".tex" `isPrefixOf` dropWhile (/= '.') (dropWhile (/= '/') line)
