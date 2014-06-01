@@ -1,14 +1,17 @@
-dist
-cabal-dev
+# Temp files
 *.o
 *.hi
 *.chi
 *.chs.h
+
+# Temp folders
+dist
+cabal-dev
+cabal.config
+cabal.sandbox.config
+
+# Hidden folders
 .virtualenv
 .hsenv
 .cabal-sandbox/
-cabal.sandbox.config
-cabal.config
 
-example/example.pdf
-example/documents/index.tex

@@ -5,7 +5,7 @@ module Jobs
 -- Project Level Imports --
 import Datatypes (Document (..), Job (..))
 
--- Project Level Imports --
+-- Global Level Imports --
 import Control.Monad (forM)
 import Data.List (delete, sort)
 import System.Exit (ExitCode (..))

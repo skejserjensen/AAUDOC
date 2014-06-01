@@ -19,6 +19,7 @@ expandMacro _ ('%' : 'm' : 'a' : 'c' : 'r' : 'o' : ' ' : macro) =
         error $ "ExpandMacro: unknown macro definition in header " ++ show macro
 expandMacro _ headerLine = [headerLine]
 
+-- Macro Functions --
 macroCompile :: [String]
 macroCompile = ["%link Documents/ Documents/index.tex", "%command lualatex",
         "%command lualatex", "%clean"]

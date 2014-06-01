@@ -7,15 +7,15 @@ import Datatypes (Job (..))
 
 -- Global Level Imports --
 import Control.Monad ((>=>))
-import System.Exit (ExitCode (..))
 import Data.List (isPrefixOf)
+import System.Exit (ExitCode (..))
 
 -- Public Functions --
 addJobOutputParser :: Job -> Job
 addJobOutputParser (StandardJob operation function) = StandardJob operation function
 addJobOutputParser (CommandJob command operation function)
             | command `elem` ["latex", "pdflatex", "xelatex", "lualatex"] =
-                                        CommandJob command operation $ function >=> laTeXStripNonErrors
+                            CommandJob command operation $ function >=> laTeXStripNonErrors
             | otherwise = CommandJob command operation function
 
 -- Job Output Parser Functions --

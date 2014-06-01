@@ -34,8 +34,7 @@ processDocument docPath = do
             -- Strip the path so relative folder paths and file names can be used
             let relativeDocPath = reverse $ takeWhile (/= pathSeparator) $ reverse docPath
             let docName = dropExtension relativeDocPath
-            let docFolder = takeDirectory relativeDocPath
-            let document = Document relativeDocPath docName docFolder
+            let document = Document relativeDocPath docName
             -- Parses the header of the current file and builds jobs
             jobList <- catch (buildJobList document) handleFileIOException
             -- Adds output parsers to the jobs that support it to minimise useless output
@@ -58,9 +57,9 @@ performJob document (CommandJob _ operation function) = printJob operation >> fu
 printJobErrors :: (ExitCode, String, String) -> IO ()
 printJobErrors (ExitSuccess, _, _) = return ()
 printJobErrors (ExitFailure exitCode, stdout, stderr) = printErrorCode exitCode >> printStreams
-    where printStreams = printError stdout >> printError stderr
+    where printStreams = printJobOutput stdout >> printJobOutput stderr
 
--- Error Handling Functions
+-- Error Handling Functions --
 handleFileIOException :: IOException -> IO [a]
 handleFileIOException ioe = putStrLn ("     ----- IO Error -----\n\
                                 \     " ++ show ioe ++ "\n\n\
@@ -109,9 +108,9 @@ formatPrints _ input = error $ "FormatPrints: unknown argument to print formatte
 printErrorCode :: Int -> IO ()
 printErrorCode exitCode = putStrLn (formatPrints "ERROR" $ show exitCode)
 
-printError :: String -> IO ()
-printError "" = return ()
-printError output = putStr (indentJobOutput (errorBorder ++ ('\n' : output) ++ errorBorder)) >> waitForUserInput
+printJobOutput :: String -> IO ()
+printJobOutput "" = return ()
+printJobOutput output = putStr (indentJobOutput (errorBorder ++ ('\n' : output) ++ errorBorder)) >> waitForUserInput
     where errorBorder = "-----------------------------------"
           waitForUserInput = putStrLn "     Press Return to to continue, or Ctrl-C to terminate" >> pause
 

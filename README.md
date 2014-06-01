@@ -26,7 +26,7 @@ AAUDOC is configured using some simple annotations in the header of main tex doc
 %link directory-with-tex-documet output-path-index.tex
 ```
 
-*Command* takes a program in the system's path and runs it on the main tex document, for example lualatex, bibtex, etc. Arguments can be entered as a space-separated list after the program name itself.  
+*Command* takes a program in the system's path and runs it on the main tex document, for example lualatex, bibtex, etc. Arguments can be entered as a space-separated list after the program name itself.
 ```
 %command program [arguments]
 ```
@@ -84,11 +84,6 @@ The last macro is just compilation linking, compilation, and cleaning. Two compi
 %clean
 ```
 
-TODO
-----
-* Go through the program and simplify the code where possible, re-factoring at the same time.
-* Investigate how to set the path appropriately to correct "bibtex: (openout_any = p)" errors.
- 
 License
 -------
 The program is licensed under version 3 of the GPL, and a copy of the license is bundled with the program.
