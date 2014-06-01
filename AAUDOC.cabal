@@ -15,3 +15,14 @@ executable aaudoc
   ghc-options:         -Wall -O2
   main-is:             Main.hs
   hs-source-dirs:      src
+
+-- The line "library" is a hack to prevent the warning shown in the box below from cluttering the output
+-- when building the package. The line was added as a last resort, as I where unable to find the tool
+-- in the build process that accepts the flags suggested, nor any documentation about the flags them self
+-- ---------------------------------------------------------------------------------------------------
+--    Preprocessing executable 'aaudoc' for AAUDOC-0.1.0.0...
+--    Warning: No documentation was generated as this package does not contain a
+--    library. Perhaps you want to use the --executables, --tests or --benchmarks
+--    flags.
+-- ---------------------------------------------------------------------------------------------------
+library
