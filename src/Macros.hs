@@ -21,15 +21,15 @@ expandMacro _ headerLine = [headerLine]
 
 -- Macro Functions --
 macroCompile :: [String]
-macroCompile = ["%link Documents/ Documents/index.tex", "%command lualatex",
+macroCompile = ["%link Documents/ index.tex", "%command lualatex",
         "%command lualatex", "%clean"]
 
 macroCompileWithBibTex :: [String]
-macroCompileWithBibTex = ["%link Documents/ Documents/index.tex", "%command lualatex",
+macroCompileWithBibTex = ["%link Documents/ index.tex", "%command lualatex",
         "%command bibtex", "%command lualatex", "%command lualatex", "%clean"]
 
 macroCompileWithIndex :: [String]
-macroCompileWithIndex = ["%link Documents/ Documents/index.tex", "%command lualatex",
+macroCompileWithIndex = ["%link Documents/ index.tex", "%command lualatex",
         "%command makeindex", "%command lualatex", "%command lualatex", "%clean"]
 
 macroCompileDoc :: String -> [String]

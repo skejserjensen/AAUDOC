@@ -21,7 +21,7 @@ Configuration
 -------------
 AAUDOC is configured using some simple annotations in the header of main tex document in a LaTeX project, the one that is being compiled to create the final document. The AAUDOC configuration header must be placed at the top of the main tex document and have no normal LaTeX comments trailing it. Currently, three annotations are supported, each corresponding more or less to one of the programs features.
 
-*Link* searches a directory recursively for documents with either the .tex or .bib suffix and creates an index, with each file included with the appropriate expression. The first argument defines what folder should be searched for .tex and .bib files, while the second argument is the path where the index .tex file should be written.
+*Link* searches a directory recursively for documents with either the .tex or .bib suffix and creates an index, with each file included with the appropriate expression. The index file itself is automatically removed from the index if encountered upon subsequent compilations, meaning it can be placed directly in the folder being indexed. The first argument defines what folder should be searched for .tex and .bib files, while the second argument is the path where the index .tex file should be written.
 ```
 %link directory-with-tex-documet output-path-index.tex
 ```
@@ -61,7 +61,7 @@ The next two macros currently implemented are very similar, and performs linking
 ```
 %macro compile-with-bib
 ------
-%link Documents/ Documents/index.tex
+%link Documents/ index.tex
 %command lualatex
 %command bibtex
 %command lualatex
@@ -71,7 +71,7 @@ The next two macros currently implemented are very similar, and performs linking
 ```
 %macro compile-with-index
 ------
-%link Documents/ Documents/index.tex
+%link Documents/ index.tex
 %command lualatex
 %command makeindex
 %command lualatex
@@ -83,7 +83,7 @@ The last macro is just compilation linking, compilation, and cleaning. Two compi
 ```
 %macro compile
 ------
-%link Documents/ Documents/index.tex
+%link Documents/ index.tex
 %command lualatex
 %command lualatex
 %clean
