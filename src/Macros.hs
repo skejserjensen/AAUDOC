@@ -33,6 +33,6 @@ macroCompileWithIndex = ["%link Documents/ Documents/index.tex", "%command luala
         "%command makeindex", "%command lualatex", "%command lualatex", "%clean"]
 
 macroCompileDoc :: String -> [String]
-macroCompileDoc docName = ["%link Documents/" ++ docName ++ "/ Documents/" ++
+macroCompileDoc docName = ["%link-doc Documents/" ++ docName ++ "/ Documents/" ++
         docName ++ "/index.tex", "%command lualatex", "%command bibtex",
         "%command lualatex", "%command lualatex", "%clean"]

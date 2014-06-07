@@ -1,5 +1,5 @@
-name:                AAUDOC 
-version:             0.1.0.0
+name:                AAUDOC
+version:             0.2.0.0
 synopsis:            Cross-platform implementation of the (in)famous compile-doc for collaborative LaTeX document compilation.
 homepage:            https://github.com/skejserjensen/AAUDOC
 license:             GPL-3
