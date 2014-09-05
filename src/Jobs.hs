@@ -23,7 +23,7 @@ buildJob ("%link" : inputPath : outputPath : []) = buildLinkJob inputPath output
 buildJob ("%link-doc" : inputPath : outputPath : []) = buildLinkJob inputPath outputPath linkDocJob
 buildJob ("%clean" : suffixList) = StandardJob ("Cleaning: " ++ show suffixes) (cleanJob suffixes)
     where suffixes = if null suffixList then defaultSuffixList else suffixList
-          defaultSuffixList = ["aux", "bbl", "blg", "brf", "ilg", "ind", "idx", "log", "out", "pyg", "toc"]
+          defaultSuffixList = ["aux", "bbl", "blg", "brf", "ilg", "ind", "idx", "log", "out", "pyg", "snm", "nav", "toc", "vrb"]
 buildJob list = error $ "BuildJob: unknown operation in header \"" ++ show list ++ "\""
 
 -- Job Functions --
