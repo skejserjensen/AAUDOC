@@ -45,6 +45,11 @@ Macros
 ------
 Although no particular structure is enforced by AAUDOC, many LaTeX projects follow a similar setup, so an additional annotation "macro" is supported. This annotation does not add additional functionality, but is simply replaced by a set of annotations on runtime, allowing for less configuration for LaTeX projects following a particular structure.
 
+Arguments for any of the opearations contained in a macro can be added with the syntax shown below, where the number before the equal sign indicates the index of the command the argument should be passed to. In this example will the argument "-shell-escape" be passed to the "lualatex" command
+```
+%macro compile-doc -1=-shell-escape
+```
+
 The first macro makes AAUDOC operate like the [(in)famous compile-doc](https://github.com/dhil/compile-doc), "document-name" is a placeholder for the name of the main tex document being compiled.
 ```
 %macro compile-doc
