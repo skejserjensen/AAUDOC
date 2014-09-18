@@ -7,6 +7,7 @@ import Datatypes (Document (..), Job (..))
 
 -- Global Level Imports --
 import Control.Monad (forM)
+import Prelude hiding (catch)
 import Data.List (delete, sort)
 import System.Exit (ExitCode (..))
 import Control.Exception (throwIO, catch)

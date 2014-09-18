@@ -4,6 +4,7 @@ import Parsers (addJobOutputParser)
 import Datatypes (Job (..), Document (..))
 
 -- Global Level Imports --
+import Prelude hiding (catch)
 import Control.DeepSeq (($!!))
 import System.Environment (getArgs)
 import Data.Time.Clock.POSIX (getPOSIXTime)
