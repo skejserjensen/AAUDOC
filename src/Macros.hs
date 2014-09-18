@@ -21,7 +21,8 @@ expandMacro doc ("%macro" : "compile-doc" : args) =
         attachArguments (macroCompileDoc $ name doc) args
 expandMacro _ ("'%macro" : macro) =
         error $ "ExpandMacro: unknown macro definition in header " ++ show macro
-expandMacro _ headerLine = headerLine
+    -- Use of "unwords" is needed to not separate non macro arguments from their intended jobs
+expandMacro _ headerLine = [unwords headerLine]
 
 -- Macro Functions --
 macroCompile :: [String]
