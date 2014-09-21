@@ -19,8 +19,8 @@ import System.Directory (doesDirectoryExist, getDirectoryContents, removeFile)
 buildJob :: [String] -> Job
 buildJob ("%command" : command : arguments) =
     CommandJob command ("Command: " ++ command) (commandJob command arguments)
-buildJob ("%link" : inputPath : outputPath : []) = buildLinkJob inputPath outputPath linkJob
-buildJob ("%link-doc" : inputPath : outputPath : []) = buildLinkJob inputPath outputPath linkDocJob
+buildJob ["%link", inputPath, outputPath] = buildLinkJob inputPath outputPath linkJob
+buildJob ["%link-doc", inputPath, outputPath] = buildLinkJob inputPath outputPath linkDocJob
 buildJob ("%clean" : suffixList) = StandardJob ("Cleaning: " ++ show suffixes) (cleanJob suffixes)
     where suffixes = if null suffixList then defaultSuffixList else suffixList
           defaultSuffixList = ["aux", "bbl", "blg", "brf", "ilg", "ind", "idx", "log", "out", "pyg", "snm", "nav", "toc", "vrb"]

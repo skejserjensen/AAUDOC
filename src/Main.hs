@@ -4,25 +4,39 @@ import Parsers (addJobOutputParser)
 import Datatypes (Job (..), Document (..))
 
 -- Global Level Imports --
+import Paths_AAUDOC (version)
 import Control.DeepSeq (($!!))
+import Data.Version (showVersion)
 import System.Environment (getArgs)
 import Data.Time.Clock.POSIX (getPOSIXTime)
 import Control.Monad (filterM, (>=>), void)
-import System.Exit (ExitCode (..), exitFailure)
 import Control.Exception (catch, IOException, ErrorCall)
+import System.Exit (ExitCode (..), exitFailure, exitSuccess)
 import System.Directory (getCurrentDirectory, setCurrentDirectory, doesFileExist)
 import System.FilePath (takeExtension, dropExtension, takeDirectory, pathSeparator)
 
 -- Main Function --
 main :: IO ()
-main = getArgs >>= preparePaths >>= processDocuments >> return ()
+main = getArgs >>= processArguments >>= preparePaths >>= mapM_ processDocument
         where preparePaths = filterM doesFileExist . map expandTexPath . filter couldBeTex
 
--- Document Processsing --
-processDocuments :: [String] -> IO ()
-processDocuments [] = usage >> exitFailure -- No Tex documents passed
-processDocuments documents = mapM_ processDocument documents
+-- Argument Processing
+processArguments :: [String] -> IO [String]
+processArguments args
+            | "--help" `elem` args = printUsage >> exitSuccess
+            | "-h" `elem` args = printUsage >> exitSuccess
+            | "--version" `elem` args = printVersion >> exitSuccess
+            | "-v" `elem` args = printVersion >> exitSuccess
+            | null args = printUsage >> exitFailure -- No Tex documents passed
+            | otherwise = return args
 
+printUsage :: IO ()
+printUsage = putStrLn "usage: aaudoc texfiles"
+
+printVersion :: IO ()
+printVersion = putStrLn $ "aaudoc, version " ++ showVersion version
+
+-- Document Processsing --
 processDocument :: String -> IO ()
 processDocument docPath = do
             -- Prints a header to the user indicating processing is staring
@@ -83,9 +97,6 @@ handleJOBIOException ioe = putStrLn $ "     ----- IO Error -----\n\
                                 \     ----- IO Error -----"
 
 -- Helper Functions --
-usage :: IO ()
-usage = putStrLn "usage: aaudoc texfiles"
-
 couldBeTex :: String -> Bool -- Checks if a document could be a Tex documents
 couldBeTex docPath = takeExtension docPath `elem` ["", ".", ".tex"]
 
