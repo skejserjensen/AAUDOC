@@ -98,12 +98,13 @@ handleJOBIOException ioe = putStrLn $ "     ----- IO Error -----\n\
 
 -- Helper Functions --
 couldBeTex :: String -> Bool -- Checks if a document could be a Tex documents
-couldBeTex docPath = takeExtension docPath `elem` ["", ".", ".tex"]
+couldBeTex docPath = takeExtension docPath `elem` ["", ".", ".tex", ".pdf"]
 
-expandTexPath :: String -> String -- Loosens the requirements of document paths
+expandTexPath :: String -> String -- HACK: matches last char as all possibilities, as seen above, can be differentiated
 expandTexPath documentPath = case last documentPath of
                                 'x' -> documentPath
                                 '.' -> documentPath ++ "tex"
+                                'f' -> dropExtension documentPath ++ ".tex"
                                 _ -> documentPath ++ ".tex"
 
 printJob :: String -> IO ()

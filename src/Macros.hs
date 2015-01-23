@@ -54,4 +54,3 @@ attachArgument expandedMacro ('-' : indexChar : '=' : arg) =
     where headerLine = expandedMacro !! index
           index = read [indexChar] - 1
 attachArgument _ arg = error $ "AttachArgumetn: invalid macro argument syntax in header " ++ show arg
-
