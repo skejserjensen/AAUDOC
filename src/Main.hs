@@ -4,6 +4,7 @@ import Parsers (addJobOutputParser)
 import Datatypes (Job (..), Document (..))
 
 -- Global Level Imports --
+import Data.List (nub)
 import Paths_AAUDOC (version)
 import Control.DeepSeq (($!!))
 import Data.Version (showVersion)
@@ -18,7 +19,7 @@ import System.FilePath (takeExtension, dropExtension, takeDirectory, pathSeparat
 -- Main Function --
 main :: IO ()
 main = getArgs >>= processArguments >>= preparePaths >>= mapM_ processDocument
-        where preparePaths = filterM doesFileExist . map expandTexPath . filter couldBeTex
+        where preparePaths = filterM doesFileExist . nub . map expandTexPath . filter couldBeTex
 
 -- Argument Processing
 processArguments :: [String] -> IO [String]
