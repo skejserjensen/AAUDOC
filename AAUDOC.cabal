@@ -1,5 +1,5 @@
 name:                AAUDOC
-version:             0.3.4.1
+version:             0.3.5.1
 synopsis:            Cross-platform implementation of the (in)famous compile-doc for collaborative LaTeX document compilation.
 homepage:            https://github.com/skejserjensen/AAUDOC
 license:             GPL-3
@@ -20,7 +20,7 @@ executable aaudoc
 -- when building the package. The line was added as a last resort, as I where unable to find the tool
 -- in the build process that accepts the flags suggested, nor any documentation about the flags them self
 -- ---------------------------------------------------------------------------------------------------
---    Preprocessing executable 'aaudoc' for AAUDOC-0.3.4.1...
+--    Preprocessing executable 'aaudoc' for AAUDOC-0.3.5.1...
 --    Warning: No documentation was generated as this package does not contain a
 --    library. Perhaps you want to use the --executables, --tests or --benchmarks
 --    flags.
