@@ -70,7 +70,7 @@ The first macro makes AAUDOC operate like the [(in)famous compile-doc](https://g
 
 The second macro is very similar to compile-doc but forgoes the possibility of parallel compilation by using the same path for the index for each compilation, it however make it simpler to exclude from version control as only one file needs to be excluded no matter the amount of documents. Also the link job does not add "\begin{document} .. \end{document}" aroudn the indexed files, this allows parts of the document to be written in the file including the index.
 ```
-%macro aauduc
+%macro aaudoc
 ------
 %link Documents/"document-name"/ Documents/index.tex
 %command lualatex
