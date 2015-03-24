@@ -26,6 +26,8 @@ expandMacro doc line
       attachArguments (macroCompileDoc $ name doc) args
   | "%macro compile" `isPrefixOf` line =
       attachArguments macroCompile args
+  | "%macro aaudoc" `isPrefixOf` line =
+      attachArguments (macroAAUDoc $ name doc) args
   | "%macro" `isPrefixOf` line =
       error $ "ExpandMacro: unknown macro definition in header " ++ dropWhile (/= ' ') line
   | otherwise = [line]
@@ -33,8 +35,7 @@ expandMacro doc line
 
 -- Macro Functions --
 macroCompile :: [String]
-macroCompile = ["%link Documents/ index.tex", "%command lualatex", "%command lualatex",
-                "%clean"]
+macroCompile = ["%link Documents/ index.tex", "%command lualatex", "%command lualatex", "%clean"]
 
 macroCompileWithBibTex :: [String]
 macroCompileWithBibTex = ["%link Documents/ index.tex", "%command lualatex",
@@ -48,8 +49,12 @@ macroCompileWithIndex = ["%link Documents/ index.tex", "%command lualatex",
 
 macroCompileDoc :: String -> [String]
 macroCompileDoc docName = ["%link-doc Documents/" ++ docName ++ "/ Documents/" ++ docName ++ "/index.tex",
-                           "%command lualatex", "%command bibtex", "%command lualatex",
-                           "%command lualatex", "%clean"]
+                           "%command lualatex", "%command bibtex", "%command lualatex", "%command lualatex",
+                           "%clean"]
+
+macroAAUDoc :: String -> [String]
+macroAAUDoc docName = ["%link Documents/" ++ docName ++ "/ Documents/index.tex", "%command lualatex",
+                       "%command bibtex", "%command lualatex", "%command lualatex", "%clean"]
 
 -- Helper Functions --
 attachArguments :: [String] -> String -> [String]
