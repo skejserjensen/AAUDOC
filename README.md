@@ -45,9 +45,15 @@ Macros
 ------
 Although no particular structure is enforced by AAUDOC, many LaTeX projects follow a similar setup, so an additional annotation "macro" is supported. This annotation does not add additional functionality, but is simply replaced by a set of annotations on runtime, allowing for less configuration for LaTeX projects following a particular structure.
 
-Arguments for any of the opearations contained in a macro can be added with the syntax shown below, where the number before the equal sign indicates the index of the command the argument should be passed to. In this example will the argument "-shell-escape" be passed to the "lualatex" command
+Arguments for any of the operations contained in a macro can be added with the syntax shown below, where the number before the equal sign indicates the index of the command the argument should be passed to. In the first example will the argument "-shell-escape" be passed to the "lualatex" command. As arguments are most often passed to all commands running the same program, can arguments for a command be specified with the name of the program the command executes as shown in example two. Any number of command names and indexes can be combined as shown in example three, only requirement is that they are separated by a comma. Last if multiple arguments are needed for the same set of indexes and commands can they be defined as shown in example four, just remember to quote any white space with either single or double quotes. Using single quotes allows double quotes inside the quoting, and vice versa.
 ```
 %macro compile-doc -2=-shell-escape
+
+%macro compile-doc -lualatex=-shell-escape
+
+%macro compile-doc -3,lualatex=-shell-escape
+
+%macro compile-doc -lualatex="-shell-escape -draftmode"
 ```
 
 The first macro makes AAUDOC operate like the [(in)famous compile-doc](https://github.com/dhil/compile-doc), "document-name" is a placeholder for the name of the main tex document being compiled.
