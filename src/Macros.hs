@@ -5,6 +5,7 @@ module Macros
 -- Global Level Imports --
 import Data.Char (isSpace)
 import Data.List (isPrefixOf)
+import Control.DeepSeq (($!!))
 import qualified Data.Map as Map
 
 -- Project Level Imports --
@@ -17,18 +18,18 @@ expandMacros doc = foldl (expandToFull doc) []
 
 expandMacro :: Document -> String -> [String]
 expandMacro doc line
-  | "%macro compile" `isPrefixOf` line =
-      attachArguments macroCompile args
-  | "%macro compile-with-bib" `isPrefixOf` line =
-      attachArguments macroCompileWithBibTex args
   | "%macro compile-with-index" `isPrefixOf` line =
         attachArguments macroCompileWithIndex args
+  | "%macro compile-with-bib" `isPrefixOf` line =
+      attachArguments macroCompileWithBibTex args
   | "%macro compile-doc" `isPrefixOf` line =
       attachArguments (macroCompileDoc $ name doc) args
+  | "%macro compile" `isPrefixOf` line =
+      attachArguments macroCompile args
   | "%macro" `isPrefixOf` line =
       error $ "ExpandMacro: unknown macro definition in header " ++ dropWhile (/= ' ') line
   | otherwise = [line]
-    where args = dropWhile (/= '-') line
+    where args = unwords $ tail $ tail $ words line -- Drops %macro and name
 
 -- Macro Functions --
 macroCompile :: [String]
@@ -53,9 +54,12 @@ macroCompileDoc docName = ["%link-doc Documents/" ++ docName ++ "/ Documents/" +
 -- Helper Functions --
 attachArguments :: [String] -> String -> [String]
 attachArguments macro args = zipWith (\ item index -> item ++ getArgs argsMap item (show (index :: Integer))) macro [1 .. ]
-  where argsMap = convertToMap $ distributeArguments $ map convertToTuple $ splitMacroArguments args []
+  where argsMap = convertToMap $!! distributeArguments $ map convertToTuple $ splitMacroArguments args []
         convertToMap list = checkArgs macro $ Map.fromListWith (\ itemOne itemTwo -> itemOne ++ " " ++ itemTwo) list
-        convertToTuple arg = (takeWhile (/= '=') arg, tail $ dropWhile (/= '=') arg)
+        convertToTuple arg = (takeWhile (/= '=') arg, safeTail $ dropWhile (/= '=') arg)
+        safeTail arg = if null arg
+                          then error "Malformed macro arguments, expected seperation of placement and arguments using \"=\""
+                          else tail arg
 
 getArgs :: Map.Map String String -> String -> String -> String
 getArgs argsMap ('%' : 'c' : 'o' : 'm' : 'm' : 'a' : 'n' : 'd' : ' ' : op) index =
@@ -79,7 +83,7 @@ splitMacroArguments :: String -> [String] -> [String]
 splitMacroArguments "" acc = reverse acc
 splitMacroArguments ('-' : args) acc = splitMacroArguments rest (arg : acc)
   where (arg, rest) = nextArgument args ' ' ""
-splitMacroArguments _ _ = error "Malformed macro argumentss, expected first char to be -"
+splitMacroArguments _ _ = error "Malformed macro arguments, expected first char to be \"-\""
 
 nextArgument :: String -> Char -> String -> (String, String)
 nextArgument [] _ acc = (reverse acc, "")

@@ -18,7 +18,7 @@ import System.Directory (doesDirectoryExist, getDirectoryContents, removeFile)
 -- Job Creation --
 buildJob :: [String] -> Job
 buildJob ("%command" : command : arguments) =
-    CommandJob command ("Command: " ++ command) (commandJob command arguments)
+    CommandJob command ("Command: " ++ command ++ " " ++ unwords arguments) (commandJob command arguments)
 buildJob ["%link", inputPath, outputPath] = buildLinkJob inputPath outputPath linkJob
 buildJob ["%link-doc", inputPath, outputPath] = buildLinkJob inputPath outputPath linkDocJob
 buildJob ("%clean" : suffixList) = StandardJob ("Cleaning: " ++ show suffixes) (cleanJob suffixes)
@@ -34,7 +34,7 @@ linkDocJob :: String -> String -> Document -> IO (ExitCode, String, String)
 linkDocJob inputPath outputPath = prepareIndexFile inputPath outputPath "\n\\begin{document}" "\n\\end{document}"
 
 commandJob :: String -> [String] -> Document -> IO (ExitCode, String, String)
-commandJob command arguments doc = readProcessWithExitCode command (arguments ++ [name doc]) []
+commandJob command arguments doc = readProcessWithExitCode command (arguments ++ [name doc]) ""
 
 cleanJob :: [String] -> Document -> IO (ExitCode, String, String)
 -- The return of (ExitSuccess, "", "") is added for a uniform interface between all jobs
