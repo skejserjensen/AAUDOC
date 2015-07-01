@@ -98,4 +98,3 @@ nextArgument ('\'' : xs) '\'' acc = (reverse acc, dropWhile isSpace xs)
 nextArgument ('"' : xs) ' ' acc = nextArgument xs '"' acc
 nextArgument ('"' : xs) '"' acc = (reverse acc, dropWhile isSpace xs)
 nextArgument (x : xs) qouted acc = nextArgument xs qouted $ x : acc
-
