@@ -7,7 +7,7 @@ import Datatypes (Job (..))
 
 -- Global Level Imports --
 import Control.Monad ((>=>))
-import Data.List (isPrefixOf)
+import Data.List (isPrefixOf, isInfixOf)
 import System.Exit (ExitCode (..))
 
 -- Public Functions --
@@ -22,11 +22,14 @@ addJobOutputParser (CommandJob command operation function)
 laTeXStripNonErrors :: (ExitCode, String, String) -> IO (ExitCode, String, String)
 laTeXStripNonErrors (ExitSuccess, stdout, stderr) = return (ExitSuccess, stdout, stderr)
 laTeXStripNonErrors (exitCode, stdout, stderr) = return (exitCode, stdoutErrors, stderr)
-    where stdoutErrors = unlines $ takeTeXError [] $ reverse $ lines stdout
+    where stdoutErrors = unlines $ takeTeXError [] "" $ reverse $ lines stdout
 
 -- Helper Functions --
-takeTeXError :: [String] -> [String] -> [String]
-takeTeXError acc [] = acc -- A rough match of the parentheses structure used by LaTeX for output
-takeTeXError acc (x : xs) = if (") (" `isPrefixOf` x || "(" `isPrefixOf` x) && lineIsTexFile x
-                            then takeTeXError (x : acc) [] else takeTeXError (x : acc) xs
-    where lineIsTexFile line = ".tex" `isPrefixOf` dropWhile (/= '.') (dropWhile (/= '/') line)
+takeTeXError :: [String] -> String -> [String] -> [String]
+takeTeXError acc _ [] = acc
+takeTeXError acc _ ("" : xs) = takeTeXError ("" : acc) "" xs
+takeTeXError acc tmp (x : xs) = if couldBeTexFile x && lineIsTexFile (x ++ tmp)
+                                then takeTeXError (x : acc) "" []
+                                else takeTeXError (x : acc) (x ++ tmp) xs
+    where couldBeTexFile line = "(" `isPrefixOf` line || ") (" `isPrefixOf` line
+          lineIsTexFile line = ".tex" `isInfixOf` dropWhile (/= '.') line
