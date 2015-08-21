@@ -10,6 +10,7 @@ import Datatypes (Document (..), Job (..))
 -- Global Level Imports --
 import Data.Char (isSpace)
 import Data.List (isPrefixOf)
+import Control.DeepSeq (($!!))
 import Control.Monad (liftM)
 import System.IO (withFile, IOMode (ReadMode), hGetContents)
 
@@ -23,7 +24,8 @@ readHeader docPath = withFile docPath ReadMode $ \ docFile -> do
                        -- readFile is not used to ensure the file handle is closed
                        docStr <- hGetContents docFile
                        let header = takeHeader docStr
-                       header `seq` return header
+                       -- Ensures the header is extract before the handle is close
+                       return $!! header
     where takeHeader = takeWhile couldBeHeader . rstripWhitespace . lines
           couldBeHeader line = foldl (\ acc job -> job `isPrefixOf` line || acc)
             -- Must contain all types of jobs and macro any could appear in the header
