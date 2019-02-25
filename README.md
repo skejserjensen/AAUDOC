@@ -13,7 +13,7 @@ The package can then be compiled and/or installed by running one of two commands
 The program can be either compiled and left in a folder dist in the root of the repository.
 cabal build
 
-Or compiled and installed into cabals bin directory, which should be in systemm path.
+Or compiled and installed into cabals bin directory, which should be in the system path.
 cabal install
 ```
 
